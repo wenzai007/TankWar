@@ -1,72 +1,75 @@
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
+import java.util.List;
+import java.util.ArrayList;
 
-
-//让坦克能够顺着键盘的按键方向进行不同方向的移动  就是这样的！！！！
-
-public class TankClient extends Frame{
+public class TankClient extends Frame {
+	public static final int GAME_WIDTH = 800;
+	public static final int GAME_HEIGHT = 600;
 	
-	public static final int GAME_WIDTH=800;
-	public static final int GAME_HEIGHT=600;
+	Tank myTank = new Tank(50, 50, true, this);
+	Tank enemyTank = new Tank(100, 100, false, this);
 	
-
+	List<Missile> missiles = new ArrayList<Missile>();
 	
-	Image offScreenImage=null;
-	
-	Tank mytank =new Tank(50,50);
+	Image offScreenImage = null;
 	
 	public void paint(Graphics g) {
-		mytank.draw(g);
+		g.drawString("missiles count:" + missiles.size(), 10, 50);
 		
-	}
-	public void update(Graphics g) {
-		if(offScreenImage==null){
-			offScreenImage=this.createImage(GAME_WIDTH,GAME_HEIGHT);
+		for(int i=0; i<missiles.size(); i++) {
+			Missile m = missiles.get(i);
+			m.hitTank(enemyTank);
+			m.draw(g);
+			//if(!m.isLive()) missiles.remove(m);
+			//else m.draw(g);
 		}
-		Graphics goff=offScreenImage.getGraphics();
-		Color c=goff.getColor();
-		goff.setColor(Color.GREEN);
-		goff.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-		goff.setColor(c);//
-		paint(goff);//?????这个地方为什么是goff呢？？？
-		//答案见java本子总结21   因为前面都是画的一个图像即offscreenimg，所以
-		//都是goff画笔！
-		g.drawImage(offScreenImage, 0, 0, null);//在之前的frame上面
-		//画一个  已经刚才画好的图像！！！
+		
+		myTank.draw(g);
+		enemyTank.draw(g);
 	}
-	public void launchFrame(){
-		this.setLocation(280,100);
-		this.setSize(800, 600);
-		this.setVisible(true);
+	
+	public void update(Graphics g) {
+		if(offScreenImage == null) {
+			offScreenImage = this.createImage(GAME_WIDTH, GAME_HEIGHT);
+		}
+		Graphics gOffScreen = offScreenImage.getGraphics();
+		Color c = gOffScreen.getColor();
+		gOffScreen.setColor(Color.GREEN);
+		gOffScreen.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+		gOffScreen.setColor(c);
+		paint(gOffScreen);
+		g.drawImage(offScreenImage, 0, 0, null);
+	}
 
+	public void lauchFrame() {
+		//this.setLocation(400, 300);
+		this.setSize(GAME_WIDTH, GAME_HEIGHT);
 		this.setTitle("TankWar");
 		this.addWindowListener(new WindowAdapter() {
-
 			public void windowClosing(WindowEvent e) {
-				System.exit(0);//????什么意思  整个程序都终止了？
+				System.exit(0);
 			}
-			
 		});
-		this.setBackground(Color.GREEN);
 		this.setResizable(false);
-		this.addKeyListener(new keymonitor());
-		this.setVisible(true);
-		new Thread(new paintThread()).start();
+		this.setBackground(Color.GREEN);
+		
+		this.addKeyListener(new KeyMonitor());
+		
+		setVisible(true);
+		
+		new Thread(new PaintThread()).start();
+	}
+
+	public static void main(String[] args) {
+		TankClient tc = new TankClient();
+		tc.lauchFrame();
 	}
 	
-	private class keymonitor extends KeyAdapter{
-		public void keyPressed(KeyEvent e) {
-			//System.out.println("yes"); //测试 是否添加成功
-			mytank.pressed(e);
-			}
-		}
-	
-	private class paintThread implements Runnable {
-		public void run(){
-			while(true){
+	private class PaintThread implements Runnable {
+
+		public void run() {
+			while(true) {
 				repaint();
 				try {
 					Thread.sleep(50);
@@ -77,9 +80,28 @@ public class TankClient extends Frame{
 		}
 	}
 	
-	
-	public static void main(String args[]){
-			TankClient tc=new TankClient();
-			tc.launchFrame();
+	private class KeyMonitor extends KeyAdapter {
+
+		public void keyReleased(KeyEvent e) {
+			myTank.keyReleased(e);
+		}
+
+		public void keyPressed(KeyEvent e) {
+			myTank.keyPressed(e);
+		}
+		
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
