@@ -1,6 +1,7 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 
 public class Tank {
 	public static final int XSPEED = 5;
@@ -16,21 +17,29 @@ public class Tank {
 	private boolean good;
 	
 	private int x, y;
+	private int oldX, oldY;
+	
+	private static Random r = new Random();
 	
 	private boolean bL=false, bU=false, bR=false, bD = false;
 	enum Direction {L, LU, U, RU, R, RD, D, LD, STOP};
 	
 	private Direction dir = Direction.STOP;
 	private Direction ptDir = Direction.D;
+	
+	private int step = r.nextInt(12) + 3;
 
 	public Tank(int x, int y, boolean good) {
 		this.x = x;
 		this.y = y;
+		this.oldX = x;
+		this.oldY = y;
 		this.good = good;
 	}
 	
-	public Tank(int x, int y, boolean good, TankClient tc) {
+	public Tank(int x, int y, boolean good, Direction dir,  TankClient tc) {
 		this(x, y, good);
+		this.dir = dir;
 		this.tc = tc;
 	}
 	
@@ -79,6 +88,10 @@ public class Tank {
 	}
 	
 	void move() {
+		
+		this.oldX = x;
+		this.oldY = y;
+		
 		switch(dir) {
 		case L:
 			x -= XSPEED;
@@ -120,6 +133,25 @@ public class Tank {
 		if(y < 30) y = 30;
 		if(x + Tank.WIDTH > TankClient.GAME_WIDTH) x = TankClient.GAME_WIDTH - Tank.WIDTH;
 		if(y + Tank.HEIGHT > TankClient.GAME_HEIGHT) y = TankClient.GAME_HEIGHT - Tank.HEIGHT;
+		
+		if(!good) {
+			Direction[] dirs = Direction.values();
+			if(step == 0) {
+				step = r.nextInt(12) + 3;
+				int rn = r.nextInt(dirs.length);
+				dir = dirs[rn];
+			}			
+			step --;
+			
+			if(r.nextInt(40) > 38) this.fire();
+		}
+		
+		
+	}
+	
+	private void stay() {
+		x = oldX;
+		y = oldY;
 	}
 	
 	public void keyPressed(KeyEvent e) {
@@ -176,9 +208,10 @@ public class Tank {
 	}
 	
 	public Missile fire() {
+		if(!live) return null;
 		int x = this.x + Tank.WIDTH/2 - Missile.WIDTH/2;
 		int y = this.y + Tank.HEIGHT/2 - Missile.HEIGHT/2;
-		Missile m = new Missile(x, y, ptDir, this.tc);
+		Missile m = new Missile(x, y, good, ptDir, this.tc);
 		tc.missiles.add(m);
 		return m;
 	}
@@ -193,5 +226,31 @@ public class Tank {
 
 	public void setLive(boolean live) {
 		this.live = live;
+	}
+
+	public boolean isGood() {
+		return good;
+	}
+	
+	public boolean collidesWithWall(Wall w) {
+		if(this.live && this.getRect().intersects(w.getRect())) {
+			this.stay();
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean collidesWithTanks(java.util.List<Tank> tanks) {
+		for(int i=0; i<tanks.size(); i++) {
+			Tank t = tanks.get(i);
+			if(this != t) {
+				if(this.live && t.isLive() && this.getRect().intersects(t.getRect())) {
+					this.stay();
+					t.stay();
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
