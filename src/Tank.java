@@ -12,6 +12,8 @@ public class Tank {
 	
 	private boolean live = true;
 	
+	private int life = 100;
+	
 	TankClient tc;
 	
 	private boolean good;
@@ -271,5 +273,13 @@ public class Tank {
 		for(int i=0; i<8; i++) {
 			fire(dirs[i]);
 		}
+	}
+
+	public int getLife() {
+		return life;
+	}
+
+	public void setLife(int life) {
+		this.life = life;
 	}
 }
