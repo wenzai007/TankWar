@@ -11,6 +11,7 @@ public class Tank {
 	public static final int HEIGHT = 30;
 	
 	private boolean live = true;
+	private BloodBar bb = new BloodBar();
 	
 	private int life = 100;
 	
@@ -58,6 +59,8 @@ public class Tank {
 		else g.setColor(Color.BLUE);
 		g.fillOval(x, y, WIDTH, HEIGHT);
 		g.setColor(c);
+		
+		if(good) bb.draw(g);
 		
 		switch(ptDir) {
 		case L:
@@ -146,9 +149,7 @@ public class Tank {
 			step --;
 			
 			if(r.nextInt(40) > 38) this.fire();
-		}
-		
-		
+		}		
 	}
 	
 	private void stay() {
@@ -281,5 +282,16 @@ public class Tank {
 
 	public void setLife(int life) {
 		this.life = life;
+	}
+	
+	private class BloodBar {
+		public void draw(Graphics g) {
+			Color c = g.getColor();
+			g.setColor(Color.RED);
+			g.drawRect(x, y-10, WIDTH, 10);
+			int w = WIDTH * life/100 ;
+			g.fillRect(x, y-10, w, 10);
+			g.setColor(c);
+		}
 	}
 }
