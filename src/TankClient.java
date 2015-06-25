@@ -16,6 +16,8 @@ public class TankClient extends Frame {
 	List<Tank> tanks = new ArrayList<Tank>();
 	Image offScreenImage = null;
 	
+	Blood b = new Blood();
+	
 	public void paint(Graphics g) {
 		g.drawString("missiles count:" + missiles.size(), 10, 50);
 		g.drawString("explodes count:" + explodes.size(), 10, 70);
@@ -47,8 +49,10 @@ public class TankClient extends Frame {
 		}
 		
 		myTank.draw(g);
+		myTank.eat(b);
 		w1.draw(g);
 		w2.draw(g);
+		b.draw(g);
 	}
 	
 	public void update(Graphics g) {
